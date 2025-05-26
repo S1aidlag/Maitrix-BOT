@@ -12,7 +12,7 @@ Automated script to claim faucets, mint tokens, and stake on the Arbitrum Sepoli
 - Mints tokens using configured contracts and selectors.  
 - Stakes minted tokens.  
 - Interactive CLI with options to run faucet claims, mint & stake, or full 24-hour loop.
-- later i will add ai16z mint and stake (for now only faucet )
+- Now support all tokens and fixed the 24h loop 
 
 ---
 
