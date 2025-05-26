@@ -94,6 +94,13 @@ CONTRACTS = {
         "token_contract": "0xbebf4e25652e7f23ccdcccaacb32004501c4bff8",
         "selector": "0xa6d67510",
         "decimals": 18
+    },
+    "azusd": {
+        "name": "Mint AZUSD from AI16Z",
+        "mint_contract": "0xB0b53d8B4ef06F9Bbe5db624113C6A5D35bB7522",
+        "token_contract": "0x2d5a4f5634041f50180A25F26b2A8364452E3152",
+        "selector": "0xa6d67510",
+        "decimals": 18  # Verify this value
     }
 }
 
@@ -122,6 +129,11 @@ STAKING = {
         "staking_contract": "0x46a6585a0Ad1750d37B4e6810EB59cBDf591Dc30",
         "token_contract": "0x46a6585a0Ad1750d37B4e6810EB59cBDf591Dc30",
         "decimals": 18
+    },
+    "azusd": {
+        "staking_contract": "0xf45Fde3F484C44CC35Bdc2A7fCA3DDDe0C8f252E",
+        "token_contract": "0x5966cd11aED7D68705C9692e74e5688C892cb162",
+        "decimals": 18  # Verify this value
     }
 }
 
@@ -246,8 +258,8 @@ def run_bot():
         elif choice == "3":
             print("Starting the 24-hour loop... \n")
             while True:
-                run_mint_and_stake_loop()
                 run_faucet_bot()
+                run_mint_and_stake_loop()
                 time.sleep(86400)  # Wait for 24 hours before running again
         else:
             print("❌ Invalid choice. Please try again.")
