@@ -1,4 +1,5 @@
 import time
+import random
 import requests
 from web3 import Web3
 from dotenv import dotenv_values
@@ -24,8 +25,15 @@ FAUCETS = [
     {"name": "LVL", "url": "https://app.x-network.io/maitrix-lvl/faucet"},
     {"name": "Virtual USD", "url": "https://app.x-network.io/maitrix-virtual/faucet", "retry": True},
     {"name": "VANA", "url": "https://app.x-network.io/maitrix-vana/faucet"},
-    {"name": "ai16z", "url": "https://app.x-network.io/maitrix-ai16z/faucet"}
+    {"name": "ai16z", "url": "https://app.x-network.io/maitrix-ai16z/faucet"},
+    {"name": "USD1", "url": "https://app.x-network.io/maitrix-usd1/faucet"},
+    {"name": "0G", "url": "https://app.x-network.io/maitrix-0g/faucet"}
 ]
+
+def random_wait(max_sec=6):
+    sec = random.uniform(1, max_sec)
+    print(f"⏳ Waiting {sec:.2f} seconds to avoid bot detection...")
+    time.sleep(sec)
 
 def format_time(seconds):
     h = seconds // 3600
@@ -34,6 +42,7 @@ def format_time(seconds):
     return f"{h}h {m}m {s}s"
 
 def claim_faucet(address, faucet):
+    random_wait()  # <--- Random wait before each faucet claim
     headers = {"Content-Type": "application/json"}
     url = faucet["url"]
     name = faucet["name"]
@@ -67,9 +76,9 @@ def run_faucet_bot():
         print(f"---- Wallet: {address} ----")
         for faucet in FAUCETS:
             claim_faucet(address, faucet)
-            time.sleep(1.5)
+            # Removed fixed sleep, random_wait is now inside claim_faucet
         print(f"---- Done with wallet {address} ----\n")
-        time.sleep(2)
+        random_wait()
     print("✅   All faucets processed.\n")
 
 # ====== Mint & Stake Configuration ======
@@ -102,6 +111,7 @@ CONTRACTS = {
         "selector": "0xa6d67510",
         "decimals": 18  # Verify this value
     }
+    # USD1 minting info not available, so not added here
 }
 
 STAKING = {
@@ -134,6 +144,11 @@ STAKING = {
         "staking_contract": "0xf45Fde3F484C44CC35Bdc2A7fCA3DDDe0C8f252E",
         "token_contract": "0x5966cd11aED7D68705C9692e74e5688C892cb162",
         "decimals": 18  # Verify this value
+    },
+    "usd1": {
+        "staking_contract": "0x7799841734ac448b8634f1c1d7522bc8887a7bb9",
+        "token_contract": "0x16a8A3624465224198d216b33E825BcC3B80abf7",
+        "decimals": 18  # Assumed 18, change if needed
     }
 }
 
@@ -152,6 +167,7 @@ def get_raw_balance(w3, token_address, address):
     return contract.functions.balanceOf(w3.to_checksum_address(address)).call()
 
 def approve_erc20(w3, private_key, token_address, spender, amount_wei, address):
+    random_wait()  # <--- Random wait before approve
     abi = [{
         "name": "approve",
         "type": "function",
@@ -179,6 +195,7 @@ def approve_erc20(w3, private_key, token_address, spender, amount_wei, address):
     time.sleep(5)
 
 def mint_token(w3, account, private_key, token):
+    random_wait()  # <--- Random wait before mint
     c = CONTRACTS[token]
     address = w3.to_checksum_address(account.address)
     raw_balance = get_raw_balance(w3, c["token_contract"], address)
@@ -206,6 +223,7 @@ def mint_token(w3, account, private_key, token):
     time.sleep(5)
 
 def stake_token(w3, account, private_key, token):
+    random_wait()  # <--- Random wait before stake
     c = STAKING[token]
     address = w3.to_checksum_address(account.address)
     raw_balance = get_raw_balance(w3, c["token_contract"], address)
@@ -240,9 +258,11 @@ def run_mint_and_stake_loop():
         for token in CONTRACTS.keys():
             mint_token(w3, account, pk, token)
             stake_token(w3, account, pk, token)
-            time.sleep(2)
+            random_wait()
+        # Stake USD1 (no minting, only staking)
+        stake_token(w3, account, pk, "usd1")
         print(f"---- Done with wallet {account.address} ----\n")
-        time.sleep(2)
+        random_wait()
     print("✅   All minting and staking processed.\n")
 
 def run_bot():
