@@ -42,7 +42,7 @@ def format_time(seconds):
     return f"{h}h {m}m {s}s"
 
 def claim_faucet(address, faucet):
-    random_wait()  # <--- Random wait before each faucet claim
+    random_wait()
     headers = {"Content-Type": "application/json"}
     url = faucet["url"]
     name = faucet["name"]
@@ -67,21 +67,6 @@ def claim_faucet(address, faucet):
                 print(f"❌   [{name}][{address}] Error: {e}")
                 break
 
-def run_faucet_bot():
-    print(f"\n🕒 {time.ctime()} | Starting faucet process...\n")
-    for pk in PRIVATE_KEYS:
-        w3 = Web3(Web3.HTTPProvider(RPC_URL))
-        account = w3.eth.account.from_key(pk)
-        address = account.address
-        print(f"---- Wallet: {address} ----")
-        for faucet in FAUCETS:
-            claim_faucet(address, faucet)
-            # Removed fixed sleep, random_wait is now inside claim_faucet
-        print(f"---- Done with wallet {address} ----\n")
-        random_wait()
-    print("✅   All faucets processed.\n")
-
-# ====== Mint & Stake Configuration ======
 CONTRACTS = {
     "ausd": {
         "name": "Mint AUSD from ATH",
@@ -109,9 +94,15 @@ CONTRACTS = {
         "mint_contract": "0xB0b53d8B4ef06F9Bbe5db624113C6A5D35bB7522",
         "token_contract": "0x2d5a4f5634041f50180A25F26b2A8364452E3152",
         "selector": "0xa6d67510",
-        "decimals": 18  # Verify this value
+        "decimals": 18
+    },
+    "ousd": {
+        "name": "Mint OUSD from 0G",
+        "mint_contract": "0x0b4301877A981e7808A8F4B6E277C376960C7641",
+        "token_contract": "0xFBBDAb7684A4Da0CFAE67C5c13fA73402008953e",
+        "selector": "0xa6d67510",
+        "decimals": 18
     }
-    # USD1 minting info not available, so not added here
 }
 
 STAKING = {
@@ -143,12 +134,17 @@ STAKING = {
     "azusd": {
         "staking_contract": "0xf45Fde3F484C44CC35Bdc2A7fCA3DDDe0C8f252E",
         "token_contract": "0x5966cd11aED7D68705C9692e74e5688C892cb162",
-        "decimals": 18  # Verify this value
+        "decimals": 18
     },
     "usd1": {
         "staking_contract": "0x7799841734ac448b8634f1c1d7522bc8887a7bb9",
         "token_contract": "0x16a8A3624465224198d216b33E825BcC3B80abf7",
-        "decimals": 18  # Assumed 18, change if needed
+        "decimals": 18
+    },
+    "ousd": {
+        "staking_contract": "0xF8F951DA83dAC732A2dCF207B644E493484047eB",
+        "token_contract": "0xD23016Fd7154d9A6F2830Bfb4eA3F3106AAE0E88",
+        "decimals": 18
     }
 }
 
@@ -167,7 +163,7 @@ def get_raw_balance(w3, token_address, address):
     return contract.functions.balanceOf(w3.to_checksum_address(address)).call()
 
 def approve_erc20(w3, private_key, token_address, spender, amount_wei, address):
-    random_wait()  # <--- Random wait before approve
+    random_wait()
     abi = [{
         "name": "approve",
         "type": "function",
@@ -195,7 +191,7 @@ def approve_erc20(w3, private_key, token_address, spender, amount_wei, address):
     time.sleep(5)
 
 def mint_token(w3, account, private_key, token):
-    random_wait()  # <--- Random wait before mint
+    random_wait()
     c = CONTRACTS[token]
     address = w3.to_checksum_address(account.address)
     raw_balance = get_raw_balance(w3, c["token_contract"], address)
@@ -223,7 +219,7 @@ def mint_token(w3, account, private_key, token):
     time.sleep(5)
 
 def stake_token(w3, account, private_key, token):
-    random_wait()  # <--- Random wait before stake
+    random_wait()
     c = STAKING[token]
     address = w3.to_checksum_address(account.address)
     raw_balance = get_raw_balance(w3, c["token_contract"], address)
@@ -259,7 +255,6 @@ def run_mint_and_stake_loop():
             mint_token(w3, account, pk, token)
             stake_token(w3, account, pk, token)
             random_wait()
-        # Stake USD1 (no minting, only staking)
         stake_token(w3, account, pk, "usd1")
         print(f"---- Done with wallet {account.address} ----\n")
         random_wait()
@@ -280,7 +275,7 @@ def run_bot():
             while True:
                 run_faucet_bot()
                 run_mint_and_stake_loop()
-                time.sleep(86400)  # Wait for 24 hours before running again
+                time.sleep(86400)
         else:
             print("❌ Invalid choice. Please try again.")
         print("\n")
