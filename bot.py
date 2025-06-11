@@ -67,6 +67,7 @@ def claim_faucet(address, faucet):
                 print(f"❌   [{name}][{address}] Error: {e}")
                 break
 
+# ====== Mint & Stake Configuration ======
 CONTRACTS = {
     "ausd": {
         "name": "Mint AUSD from ATH",
@@ -244,6 +245,19 @@ def stake_token(w3, account, private_key, token):
     w3.eth.wait_for_transaction_receipt(tx_hash)
     print(f"[+] Stake {token.upper()} successful!")
     time.sleep(5)
+
+def run_faucet_bot():
+    print(f"\n🕒 {time.ctime()} | Starting faucet process...\n")
+    for pk in PRIVATE_KEYS:
+        w3 = Web3(Web3.HTTPProvider(RPC_URL))
+        account = w3.eth.account.from_key(pk)
+        address = account.address
+        print(f"---- Wallet: {address} ----")
+        for faucet in FAUCETS:
+            claim_faucet(address, faucet)
+        print(f"---- Done with wallet {address} ----\n")
+        random_wait()
+    print("✅   All faucets processed.\n")
 
 def run_mint_and_stake_loop():
     print(f"\n🕒 {time.ctime()} | Starting Mint & Stake 24-Hour Loop...\n")
